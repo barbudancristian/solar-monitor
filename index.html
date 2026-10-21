@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cabana Razvan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#1d2a26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cabana Razvan">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: o coloana tip "panou de cabana"; doua file: Acum (bateria + fluxul) si Detaliat (grafice + toate marimile, pe grupe) */
+:root{
+  --bg:#eef1ec; --surface:#fbfcf9; --line:#d6ddd3; --fg:#1d2a26; --muted:#5d6b64;
+  --sun:#c9821a; --sun-soft:#f3e3c4; --batt:#2f7d5b; --batt-soft:#d5eadf; --load:#3c5f8a; --warn:#b4472f; --grid:#e3e8e1;
+  --f-num:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141c19; --surface:#1c2622; --line:#2c3833; --fg:#e7ede8; --muted:#97a69e;
+  --sun:#e7a43c; --sun-soft:#3a2f1c; --batt:#5cc495; --batt-soft:#1d3a2e; --load:#86a8d6; --warn:#e57a5f; --grid:#25302b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141c19; --surface:#1c2622; --line:#2c3833; --fg:#e7ede8; --muted:#97a69e;
+  --sun:#e7a43c; --sun-soft:#3a2f1c; --batt:#5cc495; --batt-soft:#1d3a2e; --load:#86a8d6; --warn:#e57a5f; --grid:#25302b; color-scheme:dark}
+
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-num);font-weight:700;font-size:2rem;letter-spacing:.01em;margin:0;line-height:1;text-wrap:balance}
+.sub{color:var(--muted);font-size:.85rem;margin-top:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;padding:5px 10px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill.ok .dot{background:var(--batt)} .pill.bad .dot{background:var(--warn)} .pill.wait .dot{background:var(--sun)}
+.note{font-size:.82rem;color:var(--muted);background:var(--sun-soft);border-radius:10px;padding:8px 12px}
+
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.tabs button{font:inherit;font-weight:700;font-size:.9rem;border:0;border-radius:9px;padding:9px 0;background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--surface)}
+.tabs button:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+.view{display:flex;flex-direction:column;gap:14px}
+
+.battery{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.soc-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.soc{font-family:var(--f-num);font-weight:700;font-size:4.2rem;line-height:.9;font-variant-numeric:tabular-nums}
+.soc small{font-size:1.6rem;color:var(--muted);margin-left:2px}
+.kwh{text-align:right;color:var(--muted);font-size:.9rem}
+.kwh b{color:var(--fg);font-family:var(--f-num);font-size:1.35rem;font-weight:600}
+.cells{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.cells i{height:22px;border-radius:4px;background:var(--batt-soft);border:1px solid var(--line)}
+.cells i.on{background:var(--batt);border-color:var(--batt)}
+.cells i.low{background:var(--warn);border-color:var(--warn)}
+.batt-state{font-weight:700}
+
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px}
+.node{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;min-width:0}
+.node .v{font-family:var(--f-num);font-weight:700;font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums}
+.node .u{font-size:.95rem;color:var(--muted);font-weight:600}
+.node .t{font-size:.78rem;color:var(--muted);margin-top:4px}
+.node.sun{border-top:3px solid var(--sun)} .node.bat{border-top:3px solid var(--batt)} .node.home{border-top:3px solid var(--load)}
+.arrow{color:var(--muted);font-size:1.1rem}
+.arrow.live{color:var(--sun)}
+
+.status{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.chip{font-weight:700;font-size:.85rem;padding:4px 10px;border-radius:999px;background:var(--batt-soft);color:var(--fg)}
+.chip.fault{background:var(--warn);color:var(--surface)}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.kv{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:baseline;min-width:0}
+.kv:nth-child(odd){border-right:1px solid var(--line)}
+.kv span{color:var(--muted);font-size:.85rem}
+.kv b{font-family:var(--f-num);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kv b.txt{white-space:normal;text-align:right;font-family:var(--f-body);font-size:.9rem;font-weight:700}
+h2{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:6px 2px 0}
+
+.table{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td:first-child,th:first-child{text-align:left;color:var(--muted)}
+td b{font-family:var(--f-num);font-size:1.1rem;font-weight:600}
+tr:last-child td{border-bottom:0}
+
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 6px}
+.chart-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.legend{display:flex;gap:12px;font-size:.78rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+.chart-note{font-size:.75rem;color:var(--muted);margin-top:4px}
+
+footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:6px}
+@media (max-width:380px){.soc{font-size:3.4rem}.node .v{font-size:1.5rem}.grid{grid-template-columns:1fr}.kv:nth-child(odd){border-right:0}}
+@media (prefers-reduced-motion:no-preference){.arrow.live{animation:pulse 1.6s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.35}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Cabana Razvan</h1>
+      <div class="sub">Growatt SPF 6000 ES Plus · 6 × 600 W panouri · 2 × Deye 5 kWh · off-grid</div>
+    </div>
+    <div class="pill wait" id="conn"><span class="dot"></span><span id="connText">Se conectează…</span></div>
+  </header>
+
+  <div class="note" id="demoNote" hidden>Previzualizare cu date de test. Datele live apar doar pe pagina publicată pe GitHub.</div>
+
+  <nav class="tabs" role="tablist" aria-label="Pagini">
+    <button role="tab" id="tab-acum" aria-controls="acum" aria-selected="true">Acum</button>
+    <button role="tab" id="tab-detaliat" aria-controls="detaliat" aria-selected="false">Detaliat</button>
+  </nav>
+
+  <!-- ============ ACUM ============ -->
+  <section class="view" id="acum" role="tabpanel" aria-labelledby="tab-acum">
+    <section class="battery" aria-label="Baterie">
+      <div class="label">Baterie</div>
+      <div class="soc-row">
+        <div class="soc"><span id="soc">–</span><small>%</small></div>
+        <div class="kwh">disponibil<br><b id="kwh">–</b> din 10 kWh</div>
+      </div>
+      <div class="cells" id="cells" aria-hidden="true"></div>
+      <div class="batt-state" id="battState">–</div>
+    </section>
+
+    <section class="flow" aria-label="Flux de energie">
+      <div class="node sun"><div class="v"><span id="pv">–</span><span class="u"> W</span></div><div class="t">Panouri</div></div>
+      <div class="arrow" id="a1">›</div>
+      <div class="node bat"><div class="v"><span id="bp">–</span><span class="u"> W</span></div><div class="t" id="bpLabel">Baterie</div></div>
+      <div class="arrow" id="a2">›</div>
+      <div class="node home"><div class="v"><span id="load">–</span><span class="u"> W</span></div><div class="t">Consum</div></div>
+    </section>
+
+    <div class="status"><span class="label">Invertor</span><span class="chip" id="status">–</span></div>
+
+    <h2>Azi</h2>
+    <div class="grid">
+      <div class="kv"><span>Produs</span><b id="eToday">–</b></div>
+      <div class="kv"><span>Consumat</span><b id="lToday">–</b></div>
+    </div>
+
+    <h2>Pe scurt</h2>
+    <div class="grid">
+      <div class="kv"><span>Tensiune baterie</span><b id="bv">–</b></div>
+      <div class="kv"><span>Temperatură</span><b id="temp">–</b></div>
+      <div class="kv"><span>Ieșire AC</span><b id="ac">–</b></div>
+      <div class="kv"><span>Semnal Wi-Fi</span><b id="wifi">–</b></div>
+    </div>
+  </section>
+
+  <!-- ============ DETALIAT ============ -->
+  <section class="view" id="detaliat" role="tabpanel" aria-labelledby="tab-detaliat" hidden>
+    <div class="chart">
+      <div class="chart-head">
+        <span class="label">Putere, ultimele 24 h</span>
+        <span class="legend"><span><i style="background:var(--sun)"></i>Panouri</span><span><i style="background:var(--load)"></i>Consum</span></span>
+      </div>
+      <svg id="chPower" viewBox="0 0 340 150" role="img" aria-label="Grafic putere panouri și consum"></svg>
+    </div>
+    <div class="chart">
+      <div class="chart-head">
+        <span class="label">Baterie, ultimele 24 h</span>
+        <span class="legend"><span><i style="background:var(--batt)"></i>SOC %</span></span>
+      </div>
+      <svg id="chSoc" viewBox="0 0 340 120" role="img" aria-label="Grafic stare de încărcare baterie"></svg>
+      <div class="chart-note" id="histNote">Un punct pe minut, păstrat de dongle.</div>
+    </div>
+    <div class="chart">
+      <div class="chart-head">
+        <span class="label">Pe zile, ultimele 30</span>
+        <span class="legend"><span><i style="background:var(--sun)"></i>Produs</span><span><i style="background:var(--load)"></i>Consumat</span></span>
+      </div>
+      <svg id="chDays" viewBox="0 0 340 150" role="img" aria-label="Grafic producție și consum pe zile"></svg>
+      <div class="chart-note" id="daysNote">–</div>
+    </div>
+
+    <h2>Panouri</h2>
+    <div class="table"><table>
+      <thead><tr><th></th><th>Tensiune</th><th>Curent</th><th>Putere</th><th>Azi</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td>PV1</td><td><b id="d-pv1v">–</b></td><td><b id="d-pv1a">–</b></td><td><b id="d-pv1w">–</b></td><td><b id="d-pv1e">–</b></td><td><b id="d-pv1t">–</b></td></tr>
+        <tr><td>PV2</td><td><b id="d-pv2v">–</b></td><td><b id="d-pv2a">–</b></td><td><b id="d-pv2w">–</b></td><td><b id="d-pv2e">–</b></td><td><b id="d-pv2t">–</b></td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Baterie</h2>
+    <div class="grid">
+      <div class="kv"><span>Stare de încărcare</span><b id="d-soc">–</b></div>
+      <div class="kv"><span>Tensiune</span><b id="d-bv">–</b></div>
+      <div class="kv"><span>Putere</span><b id="d-bp">–</b></div>
+      <div class="kv"><span>Curent descărcare</span><b id="d-bda">–</b></div>
+      <div class="kv"><span>Încărcat azi</span><b id="d-cht">–</b></div>
+      <div class="kv"><span>Descărcat azi</span><b id="d-dct">–</b></div>
+      <div class="kv"><span>Încărcat total</span><b id="d-chT">–</b></div>
+      <div class="kv"><span>Descărcat total</span><b id="d-dcT">–</b></div>
+    </div>
+
+    <h2>Ieșire AC (casa)</h2>
+    <div class="grid">
+      <div class="kv"><span>Putere activă</span><b id="d-lw">–</b></div>
+      <div class="kv"><span>Putere aparentă</span><b id="d-lva">–</b></div>
+      <div class="kv"><span>Tensiune</span><b id="d-ov">–</b></div>
+      <div class="kv"><span>Frecvență</span><b id="d-of">–</b></div>
+      <div class="kv"><span>Curent</span><b id="d-oa">–</b></div>
+      <div class="kv"><span>Încărcare invertor</span><b id="d-lp">–</b></div>
+      <div class="kv"><span>Consum azi</span><b id="d-le">–</b></div>
+      <div class="kv"><span>Consum total</span><b id="d-lT">–</b></div>
+    </div>
+
+    <h2>Invertor</h2>
+    <div class="grid">
+      <div class="kv"><span>Stare</span><b class="txt" id="d-st">–</b></div>
+      <div class="kv"><span>Ore funcționare</span><b id="d-hrs">–</b></div>
+      <div class="kv"><span>Temp. invertor</span><b id="d-ti">–</b></div>
+      <div class="kv"><span>Temp. DC-DC</span><b id="d-td">–</b></div>
+      <div class="kv"><span>Tensiune bus</span><b id="d-bus">–</b></div>
+      <div class="kv"><span>Cod eroare</span><b id="d-fc">–</b></div>
+      <div class="kv"><span>Cod avertizare</span><b id="d-wc">–</b></div>
+      <div class="kv"><span>Produs total</span><b id="d-pvT">–</b></div>
+    </div>
+
+    <h2>Setări invertor</h2>
+    <div class="grid">
+      <div class="kv"><span>Prioritate ieșire</span><b class="txt" id="d-op">–</b></div>
+      <div class="kv"><span>Sursă încărcare</span><b class="txt" id="d-cp">–</b></div>
+      <div class="kv"><span>Tip baterie</span><b class="txt" id="d-bt">–</b></div>
+      <div class="kv"><span>Curent max. încărcare</span><b id="d-mcc">–</b></div>
+    </div>
+
+    <h2>Dongle</h2>
+    <div class="grid">
+      <div class="kv"><span>Semnal Wi-Fi</span><b id="d-wifi">–</b></div>
+      <div class="kv"><span>Pornit de</span><b id="d-up">–</b></div>
+      <div class="kv"><span>IP local</span><b id="d-ip">–</b></div>
+      <div class="kv"><span>Ultimul mesaj</span><b id="d-last">–</b></div>
+    </div>
+  </section>
+
+  <footer>Ultima actualizare: <span id="updated">–</span><br>Creat de Dan Barbu</footer>
+</div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+const CFG = {
+  url: "wss://bbed4c1727ee492888add0d64fc879e2.s1.eu.hivemq.cloud:8884/mqtt",
+  username: "cabana-view",
+  password: "123view456",
+  prefix: "cabana/growatt"
+};
+const BATTERY_KWH = 10;
+const S = {};
+let lastMsg = 0, online = null, demo = false, connected = false;
+
+const $ = id => document.getElementById(id);
+const key = s => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+const fmt = (v, d = 0) => v === null ? "–" : v.toLocaleString("ro-RO", {minimumFractionDigits: d, maximumFractionDigits: d});
+function get(prefix) {
+  let k = S[prefix] !== undefined ? prefix : Object.keys(S).find(x => x.startsWith(prefix));
+  if (!k) return null;
+  const v = S[k];
+  return (v === "" || isNaN(+v)) ? null : +v;
+}
+const u = (v, d, unit) => v === null ? "–" : fmt(v, d) + " " + unit;
+const set = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
+
+/* ---------- file ---------- */
+function showTab(name) {
+  ["acum", "detaliat"].forEach(n => {
+    $(n).hidden = n !== name;
+    $("tab-" + n).setAttribute("aria-selected", n === name);
+  });
+  if (name === "detaliat") drawCharts();
+  try { history.replaceState(null, "", "#" + name); } catch (e) {}
+}
+$("tab-acum").onclick = () => showTab("acum");
+$("tab-detaliat").onclick = () => showTab("detaliat");
+
+/* ---------- celule baterie ---------- */
+const cells = $("cells");
+for (let i = 0; i < 10; i++) cells.appendChild(document.createElement("i"));
+
+/* ---------- istoric tinut de dongle (mesaje retained pe HiveMQ) ---------- */
+let hist = [];               // puncte {t, pv, load, soc, bp} din ultimele 24 h
+const histHours = {};        // ora (00..23) -> lista de puncte
+const days = {};             // "AAAA-LL-ZZ" -> {pv, load}
+const val = x => (x === undefined || x === "-1" || isNaN(+x)) ? null : +x;
+function parseHour(hh, msg) {
+  const parts = msg.split(";");
+  const start = +parts[0] * 1000;
+  if (!start) return;
+  histHours[hh] = parts.slice(1).map(it => {
+    const [m, pv, load, soc, bp] = it.split(",");
+    return {t: start + (+m) * 60e3, pv: val(pv), load: val(load), soc: val(soc), bp: bp === "-1" ? null : +bp};
+  });
+  rebuildHist();
+}
+function rebuildHist() {
+  const now = Date.now();
+  hist = Object.values(histHours).flat().filter(p => now - p.t <= 24 * 3600e3 && p.t <= now + 60e3).sort((a, b) => a.t - b.t);
+}
+function parseDay(msg) {
+  const [d, pv, load] = msg.split(";");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) days[d] = {pv: +pv, load: +load};
+}
+
+function pvTotal() {
+  let pv = get("pvpowertotal");
+  const p1 = get("pv1power"), p2 = get("pv2power");
+  if (pv === null && (p1 !== null || p2 !== null)) pv = (p1 || 0) + (p2 || 0);
+  return pv;
+}
+
+/* ---------- grafice ---------- */
+function niceMax(v) { if (v <= 0) return 100; const p = Math.pow(10, Math.floor(Math.log10(v))); return Math.ceil(v / p) * p; }
+function drawChart(svg, series, H, yMaxFixed, unit) {
+  const W = 340, L = 34, R = 6, T = 8, B = 20;
+  const now = Date.now(), t0 = now - 24 * 3600e3;
+  const x = t => L + (t - t0) / (now - t0) * (W - L - R);
+  const all = series.flatMap(s => hist.map(p => p[s.k]).filter(v => v !== null && v !== undefined));
+  const yMax = yMaxFixed || niceMax(Math.max(0, ...all));
+  const y = v => T + (1 - v / yMax) * (H - T - B);
+  let g = "";
+  [0, .5, 1].forEach(f => {
+    const yy = y(yMax * f);
+    g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text x="${L - 4}" y="${yy + 3}" text-anchor="end" font-size="9" fill="var(--muted)">${fmt(yMax * f)}${f === 1 ? " " + unit : ""}</text>`;
+  });
+  for (let h = 0; h <= 24; h += 6) {
+    const t = t0 + h * 3600e3, xx = x(t);
+    const lab = h === 24 ? "acum" : new Date(t).toLocaleTimeString("ro-RO", {hour: "2-digit", minute: "2-digit"});
+    g += `<text x="${xx}" y="${H - 5}" text-anchor="${h === 0 ? "start" : h === 24 ? "end" : "middle"}" font-size="9" fill="var(--muted)">${lab}</text>`;
+  }
+  series.forEach(s => {
+    const pts = hist.filter(p => p[s.k] !== null && p[s.k] !== undefined);
+    if (pts.length < 2) return;
+    let d = "", prev = null;
+    pts.forEach(p => {
+      const gap = prev && p.t - prev.t > 10 * 60e3;     // pauza > 10 min = linie intrerupta
+      d += (d === "" || gap ? "M" : "L") + x(p.t).toFixed(1) + "," + y(p[s.k]).toFixed(1);
+      prev = p;
+    });
+    if (s.area) {
+      const a = `M${x(pts[0].t).toFixed(1)},${y(0)}` + d.replace(/^M/, "L") + `L${x(pts[pts.length - 1].t).toFixed(1)},${y(0)}Z`;
+      g += `<path d="${a}" fill="${s.c}" fill-opacity=".18" stroke="none"/>`;
+    }
+    g += `<path d="${d}" fill="none" stroke="${s.c}" stroke-width="1.8" stroke-linejoin="round"/>`;
+    const lp = pts[pts.length - 1];
+    g += `<circle cx="${x(lp.t)}" cy="${y(lp[s.k])}" r="3" fill="${s.c}"/>`;
+  });
+  if (hist.length < 2) g += `<text x="${(W + L) / 2}" y="${H / 2}" text-anchor="middle" font-size="11" fill="var(--muted)">Se adună date…</text>`;
+  svg.innerHTML = g;
+}
+function drawDays() {
+  const W = 340, H = 150, L = 34, R = 6, T = 8, B = 20, N = 30;
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const list = [];
+  for (let i = N - 1; i >= 0; i--) {
+    const d = new Date(today.getTime() - i * 86400e3);
+    const k = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    list.push({k, d, v: days[k] || null});
+  }
+  const have = list.filter(x => x.v);
+  const yMax = niceMax(Math.max(1, ...have.flatMap(x => [x.v.pv, x.v.load])));
+  const y = v => T + (1 - v / yMax) * (H - T - B);
+  const slot = (W - L - R) / N, bw = Math.max(2, slot * 0.36);
+  let g = "";
+  [0, .5, 1].forEach(f => {
+    const yy = y(yMax * f);
+    g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text x="${L - 4}" y="${yy + 3}" text-anchor="end" font-size="9" fill="var(--muted)">${fmt(yMax * f)}${f === 1 ? " kWh" : ""}</text>`;
+  });
+  list.forEach((x, i) => {
+    const x0 = L + i * slot + (slot - 2 * bw - 1) / 2;
+    if (x.v) {
+      g += `<rect x="${x0.toFixed(1)}" y="${y(x.v.pv).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(0) - y(x.v.pv)).toFixed(1)}" fill="var(--sun)" rx="1"><title>${x.k}: produs ${fmt(x.v.pv, 1)} kWh</title></rect>`;
+      g += `<rect x="${(x0 + bw + 1).toFixed(1)}" y="${y(x.v.load).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(0) - y(x.v.load)).toFixed(1)}" fill="var(--load)" rx="1"><title>${x.k}: consumat ${fmt(x.v.load, 1)} kWh</title></rect>`;
+    }
+    if (i % 7 === 2 || i === N - 1) {
+      const lab = i === N - 1 ? "azi" : x.d.getDate() + "." + String(x.d.getMonth() + 1).padStart(2, "0");
+      g += `<text x="${(L + i * slot + slot / 2).toFixed(1)}" y="${H - 5}" text-anchor="${i === N - 1 ? "end" : "middle"}" font-size="9" fill="var(--muted)">${lab}</text>`;
+    }
+  });
+  if (!have.length) g += `<text x="${(W + L) / 2}" y="${H / 2}" text-anchor="middle" font-size="11" fill="var(--muted)">Se adună date…</text>`;
+  $("chDays").innerHTML = g;
+  const sp = have.reduce((a, x) => a + x.v.pv, 0), sl = have.reduce((a, x) => a + x.v.load, 0);
+  set("daysNote", have.length ? `${have.length} ${have.length === 1 ? "zi" : "zile"} înregistrate · produs ${fmt(sp, 1)} kWh · consumat ${fmt(sl, 1)} kWh` : "Totalurile pe zi apar după primul minut de funcționare.");
+}
+function drawCharts() {
+  if ($("detaliat").hidden) return;
+  drawChart($("chPower"), [{k: "pv", c: "var(--sun)", area: true}, {k: "load", c: "var(--load)"}], 150, 0, "W");
+  drawChart($("chSoc"), [{k: "soc", c: "var(--batt)", area: true}], 120, 100, "%");
+  drawDays();
+  if (hist.length) {
+    const h = (Date.now() - hist[0].t) / 3600e3;
+    set("histNote", demo ? "Istoric de test." : `Un punct pe minut, păstrat de dongle (${fmt(Math.min(h, 24), 1)} h disponibile).`);
+  }
+}
+
+/* ---------- afisare ---------- */
+function render() {
+  const soc = get("batterysoc");
+  set("soc", fmt(soc));
+  set("kwh", soc === null ? "–" : fmt(soc / 100 * BATTERY_KWH, 1) + " kWh");
+  [...cells.children].forEach((c, i) => {
+    c.className = soc !== null && i < Math.round(soc / 10) ? (soc <= 20 ? "low" : "on") : "";
+  });
+
+  const pv = pvTotal(), load = get("loadpower"), bp = get("batterypower");
+  set("pv", fmt(pv)); set("load", fmt(load));
+  set("bp", bp === null ? "–" : fmt(Math.abs(bp)));
+  let st = "–", lbl = "Baterie";
+  if (bp !== null) {
+    if (bp > 15) { st = "Se descarcă · alimentează casa"; lbl = "Descărcare"; }
+    else if (bp < -15) { st = "Se încarcă de la soare"; lbl = "Încărcare"; }
+    else st = "În repaus";
+  }
+  set("battState", st); set("bpLabel", lbl);
+  $("a1").className = "arrow" + (pv > 20 ? " live" : "");
+  $("a2").className = "arrow" + (load > 20 ? " live" : "");
+
+  const status = S["status"] || null, fault = get("faultcode");
+  set("status", status || "–");
+  $("status").className = "chip" + ((fault && fault > 0) || /eroare/i.test(status || "") ? " fault" : "");
+
+  const e1 = get("pv1energytoday"), e2 = get("pv2energytoday");
+  set("eToday", e1 === null ? "–" : fmt((e1 || 0) + (e2 || 0), 1) + " kWh");
+  set("lToday", u(get("loadenergytoday"), 1, "kWh"));
+  set("bv", u(get("batteryvoltage"), 1, "V"));
+  set("temp", u(get("invertertemperature"), 1, "°C"));
+  const ov = get("outputvoltage"), of = get("outputfrequency");
+  set("ac", ov === null ? "–" : fmt(ov) + " V · " + fmt(of, 1) + " Hz");
+  set("wifi", u(get("wifisignal"), 0, "dBm"));
+
+  // detaliat
+  set("d-pv1v", u(get("pv1voltage"), 1, "V")); set("d-pv1a", u(get("pv1current"), 1, "A")); set("d-pv1w", u(get("pv1power"), 0, "W"));
+  set("d-pv1e", u(e1, 1, "kWh")); set("d-pv1t", u(get("pv1energytotal"), 0, "kWh"));
+  set("d-pv2v", u(get("pv2voltage"), 1, "V")); set("d-pv2a", u(get("pv2current"), 1, "A")); set("d-pv2w", u(get("pv2power"), 0, "W"));
+  set("d-pv2e", u(e2, 1, "kWh")); set("d-pv2t", u(get("pv2energytotal"), 0, "kWh"));
+
+  set("d-soc", u(soc, 0, "%")); set("d-bv", u(get("batteryvoltage"), 2, "V"));
+  set("d-bp", bp === null ? "–" : (bp > 15 ? "−" : bp < -15 ? "+" : "") + fmt(Math.abs(bp)) + " W");
+  set("d-bda", u(get("batterydischargecurrent"), 1, "A"));
+  set("d-cht", u(get("batterychargetoday"), 1, "kWh")); set("d-dct", u(get("batterydischargetoday"), 1, "kWh"));
+  set("d-chT", u(get("batterychargetotal"), 0, "kWh")); set("d-dcT", u(get("batterydischargetotal"), 0, "kWh"));
+
+  set("d-lw", u(load, 0, "W")); set("d-lva", u(get("outputapparentpower"), 0, "VA"));
+  set("d-ov", u(ov, 1, "V")); set("d-of", u(of, 2, "Hz")); set("d-oa", u(get("outputcurrent"), 1, "A"));
+  set("d-lp", u(get("loadpercent"), 1, "%")); set("d-le", u(get("loadenergytoday"), 1, "kWh")); set("d-lT", u(get("loadenergytotal"), 0, "kWh"));
+
+  set("d-st", status || "–"); set("d-hrs", u(get("operationhours"), 0, "h"));
+  set("d-ti", u(get("invertertemperature"), 1, "°C")); set("d-td", u(get("dcdctemperature"), 1, "°C"));
+  set("d-bus", u(get("busvoltage"), 1, "V"));
+  set("d-fc", fault === null ? "–" : fault === 0 ? "fără" : fmt(fault));
+  const wc = get("warningcode"); set("d-wc", wc === null ? "–" : wc === 0 ? "fără" : fmt(wc));
+  const t1 = get("pv1energytotal"), t2 = get("pv2energytotal");
+  set("d-pvT", t1 === null ? "–" : fmt((t1 || 0) + (t2 || 0), 0) + " kWh");
+
+  set("d-op", S["outputpriority"] || "–");
+  set("d-cp", S["chargerpriority"] || "–");
+  set("d-bt", S["batterytype"] || "–");
+  set("d-mcc", u(get("maxchargecurrent"), 0, "A"));
+
+  set("d-wifi", u(get("wifisignal"), 0, "dBm"));
+  const up = get("uptime");
+  set("d-up", up === null ? "–" : up >= 86400 ? fmt(up / 86400, 1) + " zile" : fmt(up / 3600, 1) + " h");
+  set("d-ip", S["ipaddress"] || "–");
+  const last = lastMsg ? new Date(lastMsg).toLocaleTimeString("ro-RO") : "–";
+  set("d-last", last); set("updated", last);
+}
+
+function setConn(cls, text) { $("conn").className = "pill " + cls; set("connText", text); }
+function refreshConn() {
+  if (demo) return setConn("wait", "Date de test");
+  if (!connected) return setConn("bad", "Fără conexiune");
+  if (online === false) return setConn("bad", "Dongle offline");
+  if (!lastMsg) return setConn("wait", "Aștept date…");
+  if (Date.now() - lastMsg > 90000) return setConn("wait", "Date vechi");
+  setConn("ok", "Live");
+}
+
+/* ---------- date de test (doar in previzualizare) ---------- */
+function loadDemo() {
+  demo = true;
+  Object.assign(S, {batterysoc: 43, pvpowertotal: 0, pv1power: 0, pv2power: 0, pv1voltage: 0, pv2voltage: 0, pv1current: 0, pv2current: 0,
+    loadpower: 141, batterypowerdescarcare: 188, batteryvoltage: 52.24, loadpercent: 2.3, outputvoltage: 230.1,
+    outputfrequency: 49.99, outputcurrent: 0.8, outputapparentpower: 180, invertertemperature: 32.4, dcdctemperature: 30.1,
+    busvoltage: 384.2, faultcode: 0, warningcode: 0, pv1energytoday: 4.6, pv2energytoday: 0, pv1energytotal: 1874, pv2energytotal: 0,
+    loadenergytoday: 2.7, loadenergytotal: 1530, batterychargetoday: 2.4, batterydischargetoday: 1.9,
+    batterychargetotal: 912, batterydischargetotal: 845, batterydischargecurrent: 3.6, operationhours: 4120,
+    wifisignal: -54, uptime: 7380, status: "Descarcare", ipaddress: "192.168.1.57",
+    outputpriority: "SBU (Soare-Baterie-Retea)", chargerpriority: "Doar soare", batterytype: "Lithium", maxchargecurrent: 48});
+  const now = Date.now(); hist = [];
+  for (let m = 24 * 60; m >= 0; m -= 1) {
+    const t = now - m * 60e3, h = new Date(t).getHours() + new Date(t).getMinutes() / 60;
+    const sun = Math.max(0, Math.sin((h - 7) / 11 * Math.PI));
+    const pv = Math.round(2600 * sun * (0.85 + 0.15 * Math.sin(m / 17)));
+    const load = Math.round(140 + 90 * Math.max(0, Math.sin((h - 17) / 6 * Math.PI)) + 40 * Math.sin(m / 9));
+    hist.push({t, pv, load, soc: null});
+  }
+  let soc = 38;
+  hist.forEach(p => { soc = Math.min(100, Math.max(15, soc + (p.pv - p.load) / 10000 * 100 * (1 / 60))); p.soc = Math.round(soc); });
+  hist[hist.length - 1].soc = 43;
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now - i * 86400e3);
+    const k = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    const cloud = 0.35 + 0.65 * Math.abs(Math.sin(i * 1.7));
+    days[k] = {pv: Math.round(14 * cloud * 10) / 10, load: Math.round((3.4 + 1.2 * Math.sin(i * 0.9)) * 10) / 10};
+  }
+  lastMsg = now;
+  $("demoNote").hidden = false;
+  render(); refreshConn(); drawCharts();
+}
+
+/* ---------- MQTT ---------- */
+try {
+  if (!window.mqtt) throw new Error("mqtt");
+  const client = mqtt.connect(CFG.url, {
+    username: CFG.username, password: CFG.password,
+    clientId: "cabana-view-" + Math.random().toString(16).slice(2, 10),
+    reconnectPeriod: 5000, connectTimeout: 10000, clean: true
+  });
+  client.on("connect", () => { connected = true; refreshConn(); client.subscribe(CFG.prefix + "/#"); });
+  client.on("close", () => { connected = false; refreshConn(); });
+  client.on("message", (topic, payload) => {
+    const msg = payload.toString();
+    const rest = topic.slice(CFG.prefix.length + 1).split("/");
+    if (rest[0] === "status") { online = msg === "online"; refreshConn(); return; }
+    if (rest[0] === "hist" && rest[1]) { parseHour(rest[1], msg); drawCharts(); return; }
+    if (rest[0] === "day" && rest[1]) { parseDay(msg); drawCharts(); return; }
+    if (rest.length >= 3 && rest[2] === "state") {
+      S[key(rest[1])] = msg; lastMsg = Date.now();
+      render(); refreshConn();
+    }
+  });
+} catch (e) {}
+
+setTimeout(() => { if (!connected && !lastMsg) loadDemo(); }, 6000);
+setInterval(() => { refreshConn(); rebuildHist(); drawCharts(); }, 30000);
+render();
+showTab(location.hash === "#detaliat" ? "detaliat" : "acum");
+</script>
+
+</body>
+</html>
