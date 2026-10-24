@@ -107,7 +107,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:6px}
   <header>
     <div>
       <h1>Cabana Razvan</h1>
-      <div class="sub">Growatt SPF 6000 ES Plus · 6 × 600 W panouri · 2 × Deye 5 kWh · off-grid</div>
+      <div class="sub">Growatt SPF 6000 ES Plus · 6 × 600 W panouri · 1 × Deye SE-G5.1 Pro-B 5,12 kWh · off-grid</div>
     </div>
     <div class="pill wait" id="conn"><span class="dot"></span><span id="connText">Se conectează…</span></div>
   </header>
@@ -125,7 +125,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:6px}
       <div class="label">Baterie</div>
       <div class="soc-row">
         <div class="soc"><span id="soc">–</span><small>%</small></div>
-        <div class="kwh">disponibil<br><b id="kwh">–</b> din 10 kWh</div>
+        <div class="kwh">disponibil<br><b id="kwh">–</b> din <span id="kwhCap">5,1</span> kWh</div>
       </div>
       <div class="cells" id="cells" aria-hidden="true"></div>
       <div class="batt-state" id="battState">–</div>
@@ -257,7 +257,7 @@ const CFG = {
   password: "123view456",
   prefix: "cabana/growatt"
 };
-const BATTERY_KWH = 10;
+const BATTERY_KWH = 5.12;   // 1 × Deye SE-G5.1 Pro-B: 51,2 V × 100 Ah (SOC-ul vine de la BMS, pe toată capacitatea)
 const S = {};
 let lastMsg = 0, online = null, demo = false, connected = false;
 
@@ -411,6 +411,7 @@ function render() {
   const soc = get("batterysoc");
   set("soc", fmt(soc));
   set("kwh", soc === null ? "–" : fmt(soc / 100 * BATTERY_KWH, 1) + " kWh");
+  set("kwhCap", fmt(BATTERY_KWH, 1));
   [...cells.children].forEach((c, i) => {
     c.className = soc !== null && i < Math.round(soc / 10) ? (soc <= 20 ? "low" : "on") : "";
   });
@@ -506,7 +507,7 @@ function loadDemo() {
     hist.push({t, pv, load, soc: null});
   }
   let soc = 38;
-  hist.forEach(p => { soc = Math.min(100, Math.max(15, soc + (p.pv - p.load) / 10000 * 100 * (1 / 60))); p.soc = Math.round(soc); });
+  hist.forEach(p => { soc = Math.min(100, Math.max(15, soc + (p.pv - p.load) / (BATTERY_KWH * 1000) * 100 * (1 / 60))); p.soc = Math.round(soc); });
   hist[hist.length - 1].soc = 43;
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now - i * 86400e3);
